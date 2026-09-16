@@ -1,0 +1,8 @@
+{
+	"appId": "com.simple.freeledger",
+	"appName": "极简记账",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}

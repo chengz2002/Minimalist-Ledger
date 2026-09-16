@@ -1,0 +1,9 @@
+[
+  {"key":"qj1788535369889195768","date":"2026-09-30 23:23:18","category":"公交卡","type":"支出","money":220.0,"currency":"CNY","hasbx":0,"username":null,"billflag":null,"sourceid":""},
+  {"key":"qj1789220127547126795","date":"2026-09-12 21:35:23","category":"零食","type":"支出","money":14.86,"currency":"CNY","hasbx":0,"username":null,"billflag":null,"sourceid":""},
+  {"key":"qj1789099503900117659","date":"2026-09-10 12:05:03","category":"工资","type":"收入","money":7796.16,"currency":"CNY","hasbx":0,"username":null,"billflag":null,"sourceid":""},
+  {"key":"qj1788976214546125299","date":"2026-09-10 01:50:08","category":"日用品","type":"支出","money":19.0,"currency":"CNY","hasbx":0,"username":null,"billflag":null,"sourceid":""},
+  {"key":"qj1788976149349105924","date":"2026-09-09 01:49:03","category":"零食","type":"支出","money":12.0,"currency":"CNY","remark":"奶茶","hasbx":0,"username":null,"billflag":null,"sourceid":""},
+  {"key":"qj17091803881343856","date":"2024-02-26 12:19:18","category":"三餐","type":"退款","money":261.2,"currency":"CNY","asset":1703272205972,"hasbx":0,"username":null,"billflag":null,"sourceid":"qj1709179766898165670"},
+  {"key":"qj1709179631214169266","date":"2024-02-28 12:07:11","category":"其它","type":"转账","money":900.0,"currency":"CNY","from":1701113416296,"target":1703520455917,"hasbx":0,"username":null,"billflag":null,"sourceid":""}
+]
