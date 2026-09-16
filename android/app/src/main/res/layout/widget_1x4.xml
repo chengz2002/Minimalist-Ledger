@@ -29,7 +29,10 @@
             android:text="¥0.00"
             android:textColor="#FFFFFF"
             android:textSize="15sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:singleLine="true"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
         <TextView
             android:id="@+id/tv_1x4_budget_info"
@@ -38,6 +41,9 @@
             android:text="预算剩余 ¥0.00"
             android:textColor="#10B981"
             android:textSize="10sp"
+            android:singleLine="true"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:layout_marginTop="2dp" />
     </LinearLayout>
 

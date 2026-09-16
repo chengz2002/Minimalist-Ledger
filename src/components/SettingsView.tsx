@@ -597,7 +597,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {/* About & Philosophy */}
       <div className="text-center pt-2 pb-4 text-xs text-gray-400 space-y-1">
-        <p>极简记账 · 免费本地安卓版 v1.4.2</p>
+        <p>极简记账 · 免费本地安卓版 v1.4.3</p>
         <p className="text-[10px]">坚持做一款真正好用、克制、纯粹的记账工具</p>
       </div>
 

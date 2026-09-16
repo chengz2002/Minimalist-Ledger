@@ -7,9 +7,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.KeyEvent;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.Toast;
+import androidx.activity.OnBackPressedCallback;
 import com.getcapacitor.BridgeActivity;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,6 +29,64 @@ public class MainActivity extends BridgeActivity {
         NotificationHelper.createNotificationChannel(this);
         handleIntent(getIntent());
         setupWidgetBridge();
+        setupBackDispatcher();
+    }
+
+    private void setupBackDispatcher() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                triggerBackHandling();
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        triggerBackHandling();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+            triggerBackHandling();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private void triggerBackHandling() {
+        if (this.bridge != null && this.bridge.getWebView() != null) {
+            WebView webView = this.bridge.getWebView();
+            webView.post(() -> {
+                webView.evaluateJavascript(
+                    "(function() { try { if (window.handleAndroidBack) { return window.handleAndroidBack() === true; } return false; } catch(e) { return false; } })()",
+                    value -> {
+                        boolean consumed = "true".equals(value);
+                        if (!consumed) {
+                            runOnUiThread(() -> {
+                                long now = System.currentTimeMillis();
+                                if (now - lastBackPressTime < 2000) {
+                                    finish();
+                                } else {
+                                    lastBackPressTime = now;
+                                    Toast.makeText(MainActivity.this, "再按一次退出应用", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    }
+                );
+            });
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        if (now - lastBackPressTime < 2000) {
+            finish();
+        } else {
+            lastBackPressTime = now;
+            Toast.makeText(MainActivity.this, "再按一次退出应用", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -51,28 +111,6 @@ public class MainActivity extends BridgeActivity {
                 });
             }
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (this.bridge != null && this.bridge.getWebView() != null) {
-            WebView webView = this.bridge.getWebView();
-            webView.evaluateJavascript("window.handleAndroidBack ? window.handleAndroidBack() : false;", value -> {
-                if (!"true".equals(value)) {
-                    runOnUiThread(() -> {
-                        long now = System.currentTimeMillis();
-                        if (now - lastBackPressTime < 2000) {
-                            finish();
-                        } else {
-                            lastBackPressTime = now;
-                            Toast.makeText(MainActivity.this, "再按一次退出应用", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            });
-            return;
-        }
-        super.onBackPressed();
     }
 
     private void setupWidgetBridge() {

@@ -158,6 +158,18 @@ export const App: React.FC = () => {
   }, [isAccountModalOpen]);
 
   useEffect(() => {
+    if (isRecordModalOpen) {
+      backButtonManager.register('app-record-modal-root', () => {
+        setIsRecordModalOpen(false);
+        setEditingTransaction(null);
+        return true;
+      }, 55);
+    } else {
+      backButtonManager.unregister('app-record-modal-root');
+    }
+  }, [isRecordModalOpen]);
+
+  useEffect(() => {
     if (activeTab !== 'timeline') {
       backButtonManager.register('app-tab-navigation', () => {
         setActiveTab('timeline');

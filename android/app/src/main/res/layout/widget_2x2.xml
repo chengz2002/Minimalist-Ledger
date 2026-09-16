@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/widget_card_bg"
-    android:padding="12dp">
+    android:padding="10dp">
 
     <!-- Header Row -->
     <LinearLayout
@@ -21,7 +21,8 @@
             android:text="极简记账"
             android:textColor="#94A3B8"
             android:textSize="11sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:singleLine="true" />
 
         <TextView
             android:id="@+id/btn_2x2_add"
@@ -29,13 +30,14 @@
             android:layout_height="wrap_content"
             android:text="+ 记账"
             android:textColor="#FFFFFF"
-            android:textSize="11sp"
+            android:textSize="10.5sp"
             android:textStyle="bold"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
+            android:paddingLeft="9dp"
+            android:paddingRight="9dp"
             android:paddingTop="3dp"
             android:paddingBottom="3dp"
-            android:background="@drawable/widget_btn_bg" />
+            android:background="@drawable/widget_btn_bg"
+            android:singleLine="true" />
     </LinearLayout>
 
     <!-- Middle Stats Row (Today vs Month) -->
@@ -43,53 +45,65 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="8dp">
 
+        <!-- Today Column -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingRight="4dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="今日支出"
                 android:textColor="#94A3B8"
-                android:textSize="11sp" />
+                android:textSize="10sp"
+                android:singleLine="true" />
 
             <TextView
                 android:id="@+id/tv_2x2_today_spent"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="¥0.00"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
+                android:singleLine="true"
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
+        <!-- Month Column -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingLeft="4dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="当月支出"
                 android:textColor="#94A3B8"
-                android:textSize="11sp" />
+                android:textSize="10sp"
+                android:singleLine="true" />
 
             <TextView
                 android:id="@+id/tv_2x2_month_spent"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="¥0.00"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
+                android:singleLine="true"
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
     </LinearLayout>
@@ -100,8 +114,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="@drawable/widget_pill_bg"
-        android:padding="8dp"
-        android:layout_marginTop="10dp">
+        android:padding="6dp"
+        android:layout_marginTop="8dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -115,7 +129,8 @@
                 android:layout_weight="1"
                 android:text="月预算剩余"
                 android:textColor="#94A3B8"
-                android:textSize="10sp" />
+                android:textSize="9.5sp"
+                android:singleLine="true" />
 
             <TextView
                 android:id="@+id/tv_2x2_budget_percent"
@@ -123,19 +138,24 @@
                 android:layout_height="wrap_content"
                 android:text="已用 0%"
                 android:textColor="#38BDF8"
-                android:textSize="10sp"
-                android:textStyle="bold" />
+                android:textSize="9.5sp"
+                android:textStyle="bold"
+                android:singleLine="true"
+                android:maxLines="1" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/tv_2x2_budget_remaining"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="¥0.00"
             android:textColor="#10B981"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textStyle="bold"
-            android:layout_marginTop="2dp" />
+            android:singleLine="true"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_marginTop="1dp" />
     </LinearLayout>
 
     <!-- Hint text -->
@@ -144,8 +164,9 @@
         android:layout_height="wrap_content"
         android:text="轻触一键快速记账 ➔"
         android:textColor="#64748B"
-        android:textSize="9sp"
+        android:textSize="8.5sp"
         android:gravity="center"
-        android:layout_marginTop="6dp" />
+        android:layout_marginTop="5dp"
+        android:singleLine="true" />
 
 </LinearLayout>
