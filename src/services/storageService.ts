@@ -30,6 +30,8 @@ const STORAGE_KEYS = {
   CATEGORIES: 'simple_ledger_categories',
   ACCOUNTS: 'simple_ledger_accounts',
   BUDGET: 'simple_ledger_budget',
+  MONTHLY_BUDGETS: 'simple_ledger_monthly_budgets',
+  BUDGET_PROMPTED_MONTHS: 'simple_ledger_budget_prompted_months',
   REMINDER: 'simple_ledger_reminder',
   DARK_MODE: 'simple_ledger_dark_mode',
   HAS_INITIALIZED: 'simple_ledger_initialized',
@@ -344,18 +346,117 @@ class StorageService {
     }
   }
 
-  // Budget
-  public getBudget(): BudgetConfig {
+  // Monthly Budgets
+  public getMonthlyBudgets(): Record<string, BudgetConfig> {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.BUDGET);
-      return data ? JSON.parse(data) : DEFAULT_BUDGET;
+      const data = localStorage.getItem(STORAGE_KEYS.MONTHLY_BUDGETS);
+      return data ? JSON.parse(data) : {};
     } catch {
-      return DEFAULT_BUDGET;
+      return {};
     }
   }
 
-  public saveBudget(budget: BudgetConfig): void {
-    localStorage.setItem(STORAGE_KEYS.BUDGET, JSON.stringify(budget));
+  public saveMonthlyBudgets(budgets: Record<string, BudgetConfig>): void {
+    localStorage.setItem(STORAGE_KEYS.MONTHLY_BUDGETS, JSON.stringify(budgets));
+  }
+
+  public getBudget(monthStr?: string): BudgetConfig {
+    const targetMonth = monthStr || formatLocalDate().slice(0, 7);
+    const monthlyBudgets = this.getMonthlyBudgets();
+    if (monthlyBudgets[targetMonth]) {
+      return monthlyBudgets[targetMonth];
+    }
+    // Fallback: check legacy single budget
+    try {
+      const legacy = localStorage.getItem(STORAGE_KEYS.BUDGET);
+      if (legacy) {
+        const parsed = JSON.parse(legacy);
+        if (parsed && typeof parsed.monthlyTotal === 'number') {
+          return parsed;
+        }
+      }
+    } catch {}
+    return DEFAULT_BUDGET;
+  }
+
+  public hasConfiguredBudget(monthStr: string): boolean {
+    const monthlyBudgets = this.getMonthlyBudgets();
+    return !!(monthlyBudgets[monthStr] && monthlyBudgets[monthStr].monthlyTotal > 0);
+  }
+
+  public saveBudget(budget: BudgetConfig, monthStr?: string): void {
+    const currentCalendarMonth = formatLocalDate().slice(0, 7);
+    const targetMonth = monthStr || currentCalendarMonth;
+    const monthlyBudgets = this.getMonthlyBudgets();
+    monthlyBudgets[targetMonth] = budget;
+    this.saveMonthlyBudgets(monthlyBudgets);
+    this.dismissBudgetPrompt(targetMonth);
+
+    // Keep legacy key updated if saving for the current calendar month
+    if (targetMonth === currentCalendarMonth) {
+      localStorage.setItem(STORAGE_KEYS.BUDGET, JSON.stringify(budget));
+    }
+  }
+
+  public getPreviousMonth(monthStr: string): string {
+    const [y, m] = monthStr.split('-').map(Number);
+    if (m === 1) {
+      return `${y - 1}-12`;
+    }
+    return `${y}-${String(m - 1).padStart(2, '0')}`;
+  }
+
+  public getPreviousMonthBudget(monthStr: string): BudgetConfig | null {
+    const prevMonth = this.getPreviousMonth(monthStr);
+    const monthlyBudgets = this.getMonthlyBudgets();
+    if (monthlyBudgets[prevMonth] && monthlyBudgets[prevMonth].monthlyTotal > 0) {
+      return monthlyBudgets[prevMonth];
+    }
+    // If no monthly budget for prevMonth, check legacy budget if prevMonth is recent
+    try {
+      const legacy = localStorage.getItem(STORAGE_KEYS.BUDGET);
+      if (legacy) {
+        const parsed: BudgetConfig = JSON.parse(legacy);
+        if (parsed && parsed.monthlyTotal > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
+    return null;
+  }
+
+  public copyPreviousMonthBudget(targetMonthStr: string): BudgetConfig | null {
+    const prevBudget = this.getPreviousMonthBudget(targetMonthStr);
+    if (!prevBudget) return null;
+    const copied: BudgetConfig = {
+      monthlyTotal: prevBudget.monthlyTotal,
+      categoryBudgets: { ...(prevBudget.categoryBudgets || {}) },
+      alertThreshold: prevBudget.alertThreshold || 0.8,
+    };
+    this.saveBudget(copied, targetMonthStr);
+    this.dismissBudgetPrompt(targetMonthStr);
+    return copied;
+  }
+
+  public isBudgetPromptDismissed(monthStr: string): boolean {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.BUDGET_PROMPTED_MONTHS);
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      return list.includes(monthStr);
+    } catch {
+      return false;
+    }
+  }
+
+  public dismissBudgetPrompt(monthStr: string): void {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.BUDGET_PROMPTED_MONTHS);
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      if (!list.includes(monthStr)) {
+        list.push(monthStr);
+        localStorage.setItem(STORAGE_KEYS.BUDGET_PROMPTED_MONTHS, JSON.stringify(list));
+      }
+    } catch {}
   }
 
   // Reminder Configuration
@@ -409,6 +510,7 @@ class StorageService {
       categories: this.getCategories(),
       accounts: this.getAccounts(),
       budget: this.getBudget(),
+      monthlyBudgets: this.getMonthlyBudgets(),
       reminder: this.getReminder(),
     };
   }
@@ -667,8 +769,13 @@ class StorageService {
           this.saveCategories(data.categories);
           if (data.accounts) this.saveAccounts(data.accounts);
           if (data.budget) this.saveBudget(data.budget);
+          if (data.monthlyBudgets) this.saveMonthlyBudgets(data.monthlyBudgets);
           if (data.reminder) this.saveReminder(data.reminder);
         } else {
+          if (data.monthlyBudgets) {
+            const currentMonthly = this.getMonthlyBudgets();
+            this.saveMonthlyBudgets({ ...data.monthlyBudgets, ...currentMonthly });
+          }
           const existingTx = this.getTransactions();
           const existingIds = new Set(existingTx.map(t => t.id));
           const mergedTx = [...existingTx];

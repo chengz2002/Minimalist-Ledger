@@ -1,7 +1,7 @@
 import React from 'react';
-import { ReceiptText, PieChart, ShieldAlert, Settings, Plus } from 'lucide-react';
+import { ReceiptText, PieChart, Settings, Plus } from 'lucide-react';
 
-export type TabType = 'timeline' | 'stats' | 'budget' | 'settings';
+export type TabType = 'timeline' | 'stats' | 'settings';
 
 interface NavigationProps {
   activeTab: TabType;
@@ -20,7 +20,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
   return (
     <>
-      {/* Floating Action Button (FAB) - Elevated with generous spacing, shown only on timeline and stats */}
+      {/* Floating Action Button (FAB) - Elevated with generous spacing, shown on timeline and stats */}
       {showFAB && (
         <button
           type="button"
@@ -34,7 +34,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
       {/* Bottom Bar Container */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-[#1a1f2c]/95 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 pb-safe transition-colors">
-        <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
+        <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-4">
           {/* Tab 1: 明细 */}
           <button
             type="button"
@@ -49,38 +49,24 @@ export const Navigation: React.FC<NavigationProps> = ({
             <span className="text-[11px] mt-1">明细</span>
           </button>
 
-          {/* Tab 2: 统计 */}
+          {/* Tab 2: 统计预算 (合并视图) */}
           <button
             type="button"
             onClick={() => onTabChange('stats')}
-            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors active:scale-95 ${
+            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors active:scale-95 relative ${
               activeTab === 'stats'
                 ? 'text-blue-600 dark:text-blue-400 font-bold'
                 : 'text-gray-400 dark:text-gray-500 hover:text-gray-600'
             }`}
           >
             <PieChart size={22} strokeWidth={activeTab === 'stats' ? 2.5 : 2} />
-            <span className="text-[11px] mt-1">统计</span>
-          </button>
-
-          {/* Tab 3: 预算 */}
-          <button
-            type="button"
-            onClick={() => onTabChange('budget')}
-            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors active:scale-95 relative ${
-              activeTab === 'budget'
-                ? 'text-blue-600 dark:text-blue-400 font-bold'
-                : 'text-gray-400 dark:text-gray-500 hover:text-gray-600'
-            }`}
-          >
-            <ShieldAlert size={22} strokeWidth={activeTab === 'budget' ? 2.5 : 2} />
-            <span className="text-[11px] mt-1">预算</span>
+            <span className="text-[11px] mt-1">统计预算</span>
             {isOverBudget && (
-              <span className="absolute top-1.5 right-6 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#1a1f2c]" />
+              <span className="absolute top-1.5 right-8 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#1a1f2c]" />
             )}
           </button>
 
-          {/* Tab 4: 设置 / 我的 */}
+          {/* Tab 3: 设置 / 我的 */}
           <button
             type="button"
             onClick={() => onTabChange('settings')}

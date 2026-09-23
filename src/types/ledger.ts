@@ -67,6 +67,7 @@ export interface LedgerBackup {
   categories: Category[];
   accounts: Account[];
   budget: BudgetConfig;
+  monthlyBudgets?: Record<string, BudgetConfig>;
   reminder?: ReminderConfig;
 }
 

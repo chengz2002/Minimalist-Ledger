@@ -30,6 +30,9 @@ public class MainActivity extends BridgeActivity {
         handleIntent(getIntent());
         setupWidgetBridge();
         setupBackDispatcher();
+        if (this.bridge != null && this.bridge.getWebView() != null) {
+            this.bridge.getWebView().setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        }
     }
 
     private void setupBackDispatcher() {

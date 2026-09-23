@@ -1,7 +1,7 @@
 ﻿# 极简记账 (Minimalist Ledger)
 
 <p align="center">
-  <img src="src/assets/icon.png" width="96" height="96" alt="极简记账 Logo" onerror="this.style.display='none'"/>
+  <img src="android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png" width="96" height="96" alt="极简记账 Logo" onerror="this.style.display='none'"/>
 </p>
 
 <p align="center">

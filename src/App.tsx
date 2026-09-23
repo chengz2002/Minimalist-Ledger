@@ -14,8 +14,7 @@ import { Navigation, TabType } from './components/Navigation';
 import { TransactionList } from './components/TransactionList';
 import { RecordModal } from './components/RecordModal';
 import { FilterDrawer } from './components/FilterDrawer';
-import { StatsView } from './components/StatsView';
-import { BudgetView } from './components/BudgetView';
+import { StatsBudgetView } from './components/StatsBudgetView';
 import { SettingsView } from './components/SettingsView';
 import { FeatureTourModal } from './components/FeatureTourModal';
 import { WidgetCenterModal } from './components/WidgetCenterModal';
@@ -40,7 +39,7 @@ export const App: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>(() => storageService.getTransactions());
   const [categories, setCategories] = useState<Category[]>(() => storageService.getCategories());
   const [accounts, setAccounts] = useState<Account[]>(() => storageService.getAccounts());
-  const [budget, setBudget] = useState<BudgetConfig>(() => storageService.getBudget());
+  const [budgetVersion, setBudgetVersion] = useState(0);
 
   // Dark mode
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => storageService.isDarkMode());
@@ -227,7 +226,7 @@ export const App: React.FC = () => {
     setTransactions(storageService.getTransactions());
     setCategories(storageService.getCategories());
     setAccounts(storageService.getAccounts());
-    setBudget(storageService.getBudget());
+    setBudgetVersion(v => v + 1);
   };
 
   // Month navigation handlers
@@ -250,6 +249,22 @@ export const App: React.FC = () => {
   };
 
   const monthPrefix = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+
+  const currentBudget = useMemo(() => {
+    return storageService.getBudget(monthPrefix);
+  }, [monthPrefix, budgetVersion]);
+
+  const hasConfiguredBudget = useMemo(() => {
+    return storageService.hasConfiguredBudget(monthPrefix);
+  }, [monthPrefix, budgetVersion]);
+
+  const prevBudget = useMemo(() => {
+    return storageService.getPreviousMonthBudget(monthPrefix);
+  }, [monthPrefix, budgetVersion]);
+
+  const isPromptDismissed = useMemo(() => {
+    return storageService.isBudgetPromptDismissed(monthPrefix);
+  }, [monthPrefix, budgetVersion]);
 
   const currentMonthTransactions = useMemo(() => {
     return transactions.filter(t => t.date.startsWith(monthPrefix));
@@ -320,6 +335,17 @@ export const App: React.FC = () => {
     return result;
   }, [transactions]);
 
+  // Real-world current month finances for Android desktop widgets
+  const realCurrentMonthPrefix = useMemo(() => formatLocalDate().slice(0, 7), []);
+  const realCurrentMonthExpense = useMemo(() => {
+    return transactions
+      .filter(t => t.date.startsWith(realCurrentMonthPrefix) && t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+  }, [transactions, realCurrentMonthPrefix]);
+  const realCurrentMonthBudget = useMemo(() => {
+    return storageService.getBudget(realCurrentMonthPrefix);
+  }, [realCurrentMonthPrefix, budgetVersion]);
+
   // Synchronize live financial data to Android native desktop widgets
   useEffect(() => {
     const bridge = (window as any).AndroidWidgetBridge;
@@ -327,18 +353,18 @@ export const App: React.FC = () => {
       try {
         bridge.updateWidgetData(JSON.stringify({
           todayExpense,
-          monthExpense: totalExpense,
-          budgetTotal: budget.monthlyTotal,
-          budgetRemaining: budget.monthlyTotal - totalExpense,
+          monthExpense: realCurrentMonthExpense,
+          budgetTotal: realCurrentMonthBudget.monthlyTotal,
+          budgetRemaining: realCurrentMonthBudget.monthlyTotal - realCurrentMonthExpense,
           dailyTrend: recent7DaysExpenses,
         }));
       } catch (err) {
         console.warn('Failed to update native widget data', err);
       }
     }
-  }, [todayExpense, totalExpense, budget.monthlyTotal, recent7DaysExpenses]);
+  }, [todayExpense, realCurrentMonthExpense, realCurrentMonthBudget.monthlyTotal, recent7DaysExpenses]);
 
-  const isOverBudget = budget.monthlyTotal > 0 && totalExpense > budget.monthlyTotal;
+  const isOverBudget = currentBudget.monthlyTotal > 0 && totalExpense > currentBudget.monthlyTotal;
 
   // Filtered transactions for timeline view
   const displayedTransactions = useMemo(() => {
@@ -444,8 +470,18 @@ export const App: React.FC = () => {
   };
 
   const handleSaveBudget = (newBudget: BudgetConfig) => {
-    storageService.saveBudget(newBudget);
-    setBudget(newBudget);
+    storageService.saveBudget(newBudget, monthPrefix);
+    setBudgetVersion(v => v + 1);
+  };
+
+  const handleCopyPrevBudget = () => {
+    storageService.copyPreviousMonthBudget(monthPrefix);
+    setBudgetVersion(v => v + 1);
+  };
+
+  const handleDismissPrompt = () => {
+    storageService.dismissBudgetPrompt(monthPrefix);
+    setBudgetVersion(v => v + 1);
   };
 
   const handleStartTour = () => {
@@ -548,31 +584,23 @@ export const App: React.FC = () => {
           </main>
         )}
 
-        {/* Tab 2: 统计图表 */}
+        {/* Tab 2: 统计与预算 (合并视图) */}
         {activeTab === 'stats' && (
           <main className="flex-1 overflow-y-auto pt-safe">
-            <StatsView
-              transactions={transactions}
-              currentYear={currentYear}
-              currentMonth={currentMonth}
-              onPrevMonth={handlePrevMonth}
-              onNextMonth={handleNextMonth}
-            />
-          </main>
-        )}
-
-        {/* Tab 3: 预算中心 */}
-        {activeTab === 'budget' && (
-          <main className="flex-1 overflow-y-auto pt-safe">
-            <BudgetView
-              budget={budget}
+            <StatsBudgetView
               transactions={transactions}
               categories={categories}
+              budget={currentBudget}
               currentYear={currentYear}
               currentMonth={currentMonth}
               onPrevMonth={handlePrevMonth}
               onNextMonth={handleNextMonth}
               onSaveBudget={handleSaveBudget}
+              onCopyPrevBudget={handleCopyPrevBudget}
+              hasConfiguredBudget={hasConfiguredBudget}
+              prevBudget={prevBudget}
+              isPromptDismissed={isPromptDismissed}
+              onDismissPrompt={handleDismissPrompt}
             />
           </main>
         )}
@@ -649,8 +677,8 @@ export const App: React.FC = () => {
             setIsRecordModalOpen(true);
           }}
           todayExpense={todayExpense}
-          monthExpense={totalExpense}
-          budget={budget}
+          monthExpense={realCurrentMonthExpense}
+          budget={realCurrentMonthBudget}
           dailyTrend={recent7DaysExpenses}
         />
 
